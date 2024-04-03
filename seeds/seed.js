@@ -6,32 +6,43 @@ const postData = require('./postData.json');
 const commentData = require('./commentData.json');
 
 const seedDatabase = async () => {
-  await sequelize.sync({ force: true });
+  const t = await sequelize.transaction();
+  try {
+    await sequelize.sync({ force: true, transaction: t });
 
-  const users = await User.bulkCreate(userData, {
-    individualHooks: true,
-    returning: true,
-  });
-
-  for (const postDataItem of postData) {
-    const { user_id, title, content } = postDataItem;
-    await Post.create({
-      user_id,
-      title,
-      content
+    const users = await User.bulkCreate(userData, {
+      individualHooks: true,
+      returning: true,
+      transaction: t
     });
-  }
 
-  for (const commentDataItem of commentData) {
-    const { post_id, user_id, content } = commentDataItem;
-    await Comment.create({
-      post_id,
-      user_id,
-      content
-    });
-  }
+    await Promise.all(postData.map(async (postDataItem) => {
+      const { user_id, title, content } = postDataItem;
+      await Post.create({
+        user_id,
+        title,
+        content
+      }, { transaction: t });
+    }));
 
-  process.exit(0);
+    await Promise.all(commentData.map(async (commentDataItem) => {
+      const { post_id, user_id, content } = commentDataItem;
+      await Comment.create({
+        post_id,
+        user_id,
+        content
+      }, { transaction: t });
+    }));
+
+    await t.commit();
+    console.log('Database seeded successfully.');
+    process.exit(0);
+  } catch (error) {
+    await t.rollback();
+    console.error('Error seeding database:', error);
+    process.exit(1);
+  }
 };
 
 seedDatabase();
+
