@@ -1,26 +1,28 @@
-const commentFormHandler = async (event) => {
+const newFormHandler = async (event) => {
     event.preventDefault();
-    const comment_text = document.querySelector('#comment-text').value.trim();
-    const post_id = event.target.getAttribute('data-post-id');
-    if (comment_text) {
-        const response = await fetch(`/api/comments/${post_id}`, {
-            method: 'POST',
-            body: JSON.stringify({
-                comment_text
-            }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        if (response.ok) {
-            document.location.reload();
-        } else {
-            alert('Failed to add comment');
-        }
-    } 
-}  
+  
+    const content = document.querySelector('#comment-content').value.trim();
+    const post_id = document.querySelector('#post-comment').getAttribute('data-id');
 
-
-document
-    .querySelector('.comment-form')
-    .addEventListener('submit', commentFormHandler);
+    console.log(post_id);
+  
+    if (content) {
+      const response = await fetch('/api/comment', {
+        method: 'POST',
+        body: JSON.stringify({ content, post_id }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (response.ok) {
+        document.location.replace('/dashboard');
+      } else {
+        alert('Failed to create a comment');
+      }
+    }
+  };
+  
+  document
+    .querySelector('.new-comment-form')
+    .addEventListener('submit', newFormHandler);
