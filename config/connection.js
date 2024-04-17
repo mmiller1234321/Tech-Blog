@@ -11,7 +11,7 @@ if (process.env.DB_URL) {
     process.env.DB_USER,
     process.env.DB_PASSWORD,
     {
-      host: 'localhost',
+      host: 'dpg-coft7qol5elc73dkg010-a.oregon-postgres.render.com',
       dialect: 'postgres'
     }
   );
